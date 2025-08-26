@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Neon Tetris</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg1: #05060d;
+      --bg2: #000000;
+      --neon-cyan: #00eaff;
+      --neon-pink: #ff4dff;
+      --neon-yellow: #ffe066;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(1200px 800px at 50% 30%, var(--bg1), var(--bg2));
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #e5f6ff;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    /* 전체 레이아웃 */
+    #stage {
+      display: none;
+      grid-template-columns: auto auto auto;
+      gap: 30px;
+      align-items: start;
+      z-index: 1;
+    }
+
+    /* 공통 패널 */
+    .panel {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(20, 24, 42, .55);
+      border: 1px solid rgba(0, 234, 255, .22);
+      box-shadow: inset 0 0 15px rgba(0, 234, 255, .15);
+      text-align: center;
+      min-width: 140px;
+    }
+    .panel canvas {
+      display: block;
+      margin: 0 auto;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--neon-pink);
+      text-shadow: 0 0 10px var(--neon-pink), 0 0 22px var(--neon-pink);
+      margin-bottom: 4px;
+    }
+    .value {
+      font-size: 15px;
+      color: #e7d8ff;
+      margin: 0;
+      text-shadow: 0 0 6px rgba(255,255,255,0.4);
+    }
+    .controls {
+      font-size: 12px;
+      color: #bfefff;
+      line-height: 1.6;
+      text-shadow: 0 0 6px rgba(0,234,255,0.4);
+    }
+
+    /* 게임 보드 */
+    #game-root {
+      border-radius: 20px;
+      padding: 12px;
+      background: rgba(15, 20, 36, 0.35);
+      border: 1px solid rgba(0, 234, 255, 0.25);
+      box-shadow: 0 0 28px rgba(0, 234, 255, .2);
+    }
+
+    /* 좌측 HUD */
+    #leftHud {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* 우측 HUD */
+    #rightHud {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* 시작 메뉴 */
+    #menu {
+      position: relative;
+      text-align: center;
+      padding: 32px 40px;
+      border-radius: 20px;
+      background: rgba(10, 15, 31, 0.65);
+      box-shadow: 0 0 25px rgba(0, 234, 255, 0.25), inset 0 0 45px rgba(255, 77, 255, 0.08);
+      border: 1px solid rgba(0, 234, 255, 0.35);
+      backdrop-filter: blur(8px);
+      z-index: 1;
+    }
+    #menu h1 {
+      margin: 0 0 20px;
+      font-size: 44px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+    }
+    #menu p.hint {
+      margin: 10px 0 20px;
+      color: #bfefff;
+      font-size: 14px;
+      letter-spacing: 1px;
+      opacity: .85;
+    }
+    #username {
+      width: 300px;
+      padding: 14px 16px;
+      font-size: 16px;
+      color: #eaffff;
+      background: #0e1628;
+      border: 2px solid var(--neon-cyan);
+      border-radius: 12px;
+      outline: none;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 234, 255, .45);
+    }
+    #username:focus {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 20px rgba(255, 77, 255, .6);
+    }
+    #startBtn {
+      margin-top: 18px;
+      padding: 14px 26px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #001016;
+      background: var(--neon-cyan);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(0, 234, 255, .8), 0 0 40px rgba(0, 234, 255, .55);
+      transition: transform .08s ease, background .2s ease;
+    }
+    #startBtn:hover {
+      transform: translateY(-2px);
+      background: var(--neon-pink);
+      color: #fff;
+      box-shadow: 0 0 18px rgba(255, 77, 255, .85);
+    }
+  </style>
+</head>
+<body>
+  <!-- 시작 화면 -->
+  <div id="menu">
+    <h1>🎮 Neon Tetris</h1>
+    <p class="hint">Use ← → ↓ ↑ / Space / Shift / P</p>
+    <input id="username" placeholder="Enter your name" />
+    <br />
+    <button id="startBtn">Start Game</button>
+  </div>
+
+  <!-- 게임 화면 -->
+  <div id="stage">
+    <!-- 좌측 HUD -->
+    <div id="leftHud">
+      <div class="panel">
+        <div class="title">HOLD</div>
+        <canvas id="holdCanvas" width="120" height="100"></canvas>
+      </div>
+    </div>
+
+    <!-- 게임판 -->
+    <div id="game-root"></div>
+
+    <!-- 우측 HUD -->
+    <div id="rightHud">
+      <div class="panel">
+        <div class="title">NEXT</div>
+        <canvas id="nextCanvas" width="140" height="200"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="title">PLAYER</div>
+        <p class="value" id="playerName">Guest</p>
+      </div>
+
+      <div class="panel">
+        <div class="title">SCORE</div>
+        <p class="value" id="score">0</p>
+      </div>
+
+      <div class="panel controls">
+        <div class="title">CONTROLS</div>
+        ← / → : Move<br />
+        ↓ : Soft Drop<br />
+        ↑ : Rotate<br />
+        Space : Hard Drop<br />
+        Shift : Hold<br />
+        P : Pause
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
