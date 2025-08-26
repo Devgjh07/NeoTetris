@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎮 Neon Tetris - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="login-container">
+    <h1>🎮 Neon Tetris</h1>
+    <input type="text" id="username" placeholder="Enter your name" />
+    <button id="loginBtn">Start Game</button>
+  </div>
+
+  <script>
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const name = document.getElementById("username").value.trim();
+      if (!name) {
+        alert("이름을 입력하세요!");
+        return;
+      }
+      // game.html 로 이동하면서 이름 전달
+      window.location.href = `game.html?user=${encodeURIComponent(name)}`;
+    });
+  </script>
+</body>
+</html>
+
